@@ -5,6 +5,7 @@ sim-cache
 sim-eio
 sim-fast
 sim-outorder
+sim-spms
 sim-profile
 sim-safe
 sysprobe

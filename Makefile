@@ -1,20 +1,20 @@
 #
 # SimpleScalar(TM) Tool Suite
 # Copyright (C) 1994-2003 by Todd M. Austin, Ph.D. and SimpleScalar, LLC.
-# All Rights Reserved. 
-# 
+# All Rights Reserved.
+#
 # THIS IS A LEGAL DOCUMENT, BY USING SIMPLESCALAR,
 # YOU ARE AGREEING TO THESE TERMS AND CONDITIONS.
-# 
+#
 # No portion of this work may be used by any commercial entity, or for any
 # commercial purpose, without the prior, written permission of SimpleScalar,
 # LLC (info@simplescalar.com). Nonprofit and noncommercial use is permitted
 # as described below.
-# 
+#
 # 1. SimpleScalar is provided AS IS, with no warranty of any kind, express
 # or implied. The user of the program accepts full responsibility for the
 # application of the program and the use of any results.
-# 
+#
 # 2. Nonprofit and noncommercial use is encouraged. SimpleScalar may be
 # downloaded, compiled, executed, copied, and modified solely for nonprofit,
 # educational, noncommercial research, and noncommercial scholarship
@@ -23,13 +23,13 @@
 # solely for nonprofit, educational, noncommercial research, and
 # noncommercial scholarship purposes provided that this notice in its
 # entirety accompanies all copies.
-# 
+#
 # 3. ALL COMMERCIAL USE, AND ALL USE BY FOR PROFIT ENTITIES, IS EXPRESSLY
 # PROHIBITED WITHOUT A LICENSE FROM SIMPLESCALAR, LLC (info@simplescalar.com).
-# 
+#
 # 4. No nonprofit user may place any restrictions on the use of this software,
 # including as modified by the user, by any other authorized user.
-# 
+#
 # 5. Noncommercial and nonprofit users may distribute copies of SimpleScalar
 # in compiled or executable form as set forth in Section 2, provided that
 # either: (A) it is accompanied by the corresponding machine-readable source
@@ -39,11 +39,11 @@
 # must permit verbatim duplication by anyone, or (C) it is distributed by
 # someone who received only the executable form, and is accompanied by a
 # copy of the written offer of source code.
-# 
+#
 # 6. SimpleScalar was developed by Todd M. Austin, Ph.D. The tool suite is
 # currently maintained by SimpleScalar LLC (info@simplescalar.com). US Mail:
 # 2395 Timbercrest Court, Ann Arbor, MI 48105.
-# 
+#
 # Copyright (C) 1994-2003 by Todd M. Austin, Ph.D. and SimpleScalar, LLC.
 #
 
@@ -278,7 +278,7 @@ CFLAGS = $(MFLAGS) $(FFLAGS) $(OFLAGS) $(BINUTILS_INC) $(BINUTILS_LIB)
 # all the sources
 #
 SRCS =	main.c sim-fast.c sim-safe.c sim-cache.c sim-profile.c \
-	sim-eio.c sim-bpred.c sim-cheetah.c sim-outorder.c \
+	sim-eio.c sim-bpred.c sim-cheetah.c sim-outorder.c  sim-spms.c \
 	memory.c regs.c cache.c bpred.c ptrace.c eventq.c \
 	resource.c endian.c dlite.c symbol.c eval.c options.c range.c \
 	eio.c stats.c endian.c misc.c \
@@ -307,7 +307,7 @@ OBJS =	main.$(OEXT) syscall.$(OEXT) memory.$(OEXT) regs.$(OEXT) \
 #
 PROGS = sim-fast$(EEXT) sim-safe$(EEXT) sim-eio$(EEXT) \
 	sim-bpred$(EEXT) sim-profile$(EEXT) \
-	sim-cache$(EEXT) sim-outorder$(EEXT) # sim-cheetah$(EEXT)
+	sim-cache$(EEXT) sim-outorder$(EEXT) sim-spms$(EEXT) # sim-cheetah$(EEXT)
 
 #
 # all targets, NOTE: library ordering is important...
@@ -393,6 +393,9 @@ sim-cache$(EEXT):	sysprobe$(EEXT) sim-cache.$(OEXT) cache.$(OEXT) $(OBJS) libexo
 sim-outorder$(EEXT):	sysprobe$(EEXT) sim-outorder.$(OEXT) cache.$(OEXT) bpred.$(OEXT) resource.$(OEXT) ptrace.$(OEXT) $(OBJS) libexo/libexo.$(LEXT)
 	$(CC) -o sim-outorder$(EEXT) $(CFLAGS) sim-outorder.$(OEXT) cache.$(OEXT) bpred.$(OEXT) resource.$(OEXT) ptrace.$(OEXT) $(OBJS) libexo/libexo.$(LEXT) $(MLIBS)
 
+sim-spms$(EEXT):	sysprobe$(EEXT) sim-spms.$(OEXT) cache.$(OEXT) bpred.$(OEXT) resource.$(OEXT) ptrace.$(OEXT) $(OBJS) libexo/libexo.$(LEXT)
+	$(CC) -o sim-spms$(EEXT) $(CFLAGS) sim-spms.$(OEXT) cache.$(OEXT) bpred.$(OEXT) resource.$(OEXT) ptrace.$(OEXT) $(OBJS) libexo/libexo.$(LEXT) $(MLIBS)
+
 exo libexo/libexo.$(LEXT): sysprobe$(EEXT)
 	cd libexo $(CS) \
 	$(MAKE) "MAKE=$(MAKE)" "CC=$(CC)" "AR=$(AR)" "AROPT=$(AROPT)" "RANLIB=$(RANLIB)" "CFLAGS=$(MFLAGS) $(FFLAGS) $(OFLAGS)" "OEXT=$(OEXT)" "LEXT=$(LEXT)" "EEXT=$(EEXT)" "X=$(X)" "RM=$(RM)" libexo.$(LEXT)
@@ -451,6 +454,11 @@ sim-tests sim-tests-nt: sysprobe$(EEXT) $(PROGS)
 		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-outorder$(EEXT)" \
 		"X=$(X)" "CS=$(CS)" $(CS) \
 	cd ..
+	cd tests $(CS) \
+	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=$(ENDIAN)" tests \
+		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-spms$(EEXT)" \
+		"X=$(X)" "CS=$(CS)" $(CS) \
+	cd ..
 
 clean:
 	-$(RM) *.o *.obj *.exe core *~ MAKE.log Makefile.bak sysprobe$(EEXT) $(PROGS)
@@ -493,6 +501,10 @@ sim-outorder.$(OEXT): host.h misc.h machine.h machine.def regs.h memory.h
 sim-outorder.$(OEXT): options.h stats.h eval.h cache.h loader.h syscall.h
 sim-outorder.$(OEXT): bpred.h resource.h bitmap.h ptrace.h range.h dlite.h
 sim-outorder.$(OEXT): sim.h
+sim-spms.$(OEXT): host.h misc.h machine.h machine.def regs.h memory.h
+sim-spms.$(OEXT): options.h stats.h eval.h cache.h loader.h syscall.h
+sim-spms.$(OEXT): bpred.h resource.h bitmap.h ptrace.h range.h dlite.h
+sim-spms.$(OEXT): sim.h
 memory.$(OEXT): host.h misc.h machine.h machine.def options.h stats.h eval.h
 memory.$(OEXT): memory.h
 regs.$(OEXT): host.h misc.h machine.h machine.def loader.h regs.h memory.h
