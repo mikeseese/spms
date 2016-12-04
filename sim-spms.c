@@ -158,24 +158,24 @@ static int RUU_size = 8;
 static int LSQ_size = 4;
 
 /* l1 data cache config, i.e., {<config>|none} */
-static char *cache_dl1_opt;
+static char *cache_spm1_opt;
 
 /* l1 data cache hit latency (in cycles) */
-static int cache_dl1_lat;
+static int cache_spm1_lat;
 
 /* l2 data cache config, i.e., {<config>|none} */
-static char *cache_dl2_opt;
+static char *cache_spm2_opt;
 
 /* l2 data cache hit latency (in cycles) */
-static int cache_dl2_lat;
+static int cache_spm2_lat;
 
-/* l1 instruction cache config, i.e., {<config>|dl1|dl2|none} */
+/* l1 instruction cache config, i.e., {<config>|spm1|spm2|none} */
 static char *cache_il1_opt;
 
 /* l1 instruction cache hit latency (in cycles) */
 static int cache_il1_lat;
 
-/* l2 instruction cache config, i.e., {<config>|dl1|dl2|none} */
+/* l2 instruction cache config, i.e., {<config>|spm1|spm2|none} */
 static char *cache_il2_opt;
 
 /* l2 instruction cache hit latency (in cycles) */
@@ -374,10 +374,10 @@ static struct cache_t *cache_il1;
 static struct cache_t *cache_il2;
 
 /* level 1 data cache, entry level data cache */
-static struct cache_t *cache_dl1;
+static struct cache_t *cache_spm1;
 
 /* level 2 data cache */
-static struct cache_t *cache_dl2;
+static struct cache_t *cache_spm2;
 
 /* instruction TLB */
 static struct cache_t *itlb;
@@ -426,7 +426,7 @@ mem_access_latency(int blk_sz)    /* block size accessed */
 
 /* l1 data cache l1 block miss handler function */
 static unsigned int     /* latency of block access */
-dl1_access_fn(enum mem_cmd cmd,   /* access cmd, Read or Write */
+spm1_access_fn(enum mem_cmd cmd,   /* access cmd, Read or Write */
               md_addr_t baddr, /* block address to access */
               int bsize, /* size of block to access */
               struct cache_blk_t *blk, /* ptr to block in upper level */
@@ -434,10 +434,10 @@ dl1_access_fn(enum mem_cmd cmd,   /* access cmd, Read or Write */
 {
     unsigned int lat;
 
-    if (cache_dl2)
+    if (cache_spm2)
     {
         /* access next level of data cache hierarchy */
-        lat = cache_access(cache_dl2, cmd, baddr, NULL, bsize,
+        lat = cache_access(cache_spm2, cmd, baddr, NULL, bsize,
                            /* now */ now, /* pudata */ NULL, /* repl addr */ NULL);
         if (cmd == Read)
             return lat;
@@ -462,7 +462,7 @@ dl1_access_fn(enum mem_cmd cmd,   /* access cmd, Read or Write */
 
 /* l2 data cache block miss handler function */
 static unsigned int     /* latency of block access */
-dl2_access_fn(enum mem_cmd cmd,   /* access cmd, Read or Write */
+spm2_access_fn(enum mem_cmd cmd,   /* access cmd, Read or Write */
               md_addr_t baddr, /* block address to access */
               int bsize, /* size of block to access */
               struct cache_blk_t *blk, /* ptr to block in upper level */
@@ -735,9 +735,9 @@ sim_reg_options(struct opt_odb_t *odb)
 
     /* cache options */
 
-    opt_reg_string(odb, "-cache:dl1",
+    opt_reg_string(odb, "-cache:spm1",
                    "l1 data cache config, i.e., {<config>|none}",
-                   &cache_dl1_opt, "dl1:128:32:4:l",
+                   &cache_spm1_opt, "spm1:128:32:4:l",
                    /* print */ TRUE, NULL);
 
     opt_reg_note(odb,
@@ -751,42 +751,42 @@ sim_reg_options(struct opt_odb_t *odb)
                  "    <assoc>  - associativity of the cache\n"
                  "    <repl>   - block replacement strategy, 'l'-LRU, 'f'-FIFO, 'r'-random\n"
                  "\n"
-                 "    Examples:   -cache:dl1 dl1:4096:32:1:l\n"
+                 "    Examples:   -cache:spm1 spm1:4096:32:1:l\n"
                  "                -dtlb dtlb:128:4096:32:r\n"
                  );
 
-    opt_reg_int(odb, "-cache:dl1lat",
+    opt_reg_int(odb, "-cache:spm1lat",
                 "l1 data cache hit latency (in cycles)",
-                &cache_dl1_lat, /* default */ 1,
+                &cache_spm1_lat, /* default */ 1,
                 /* print */ TRUE, /* format */ NULL);
 
-    opt_reg_string(odb, "-cache:dl2",
+    opt_reg_string(odb, "-cache:spm2",
                    "l2 data cache config, i.e., {<config>|none}",
-                   &cache_dl2_opt, "ul2:1024:64:4:l",
+                   &cache_spm2_opt, "ul2:1024:64:4:l",
                    /* print */ TRUE, NULL);
 
-    opt_reg_int(odb, "-cache:dl2lat",
+    opt_reg_int(odb, "-cache:spm2lat",
                 "l2 data cache hit latency (in cycles)",
-                &cache_dl2_lat, /* default */ 6,
+                &cache_spm2_lat, /* default */ 6,
                 /* print */ TRUE, /* format */ NULL);
 
     opt_reg_string(odb, "-cache:il1",
-                   "l1 inst cache config, i.e., {<config>|dl1|dl2|none}",
+                   "l1 inst cache config, i.e., {<config>|spm1|spm2|none}",
                    &cache_il1_opt, "il1:512:32:1:l",
                    /* print */ TRUE, NULL);
 
     opt_reg_note(odb,
                  "  Cache levels can be unified by pointing a level of the instruction cache\n"
-                 "  hierarchy at the data cache hiearchy using the \"dl1\" and \"dl2\" cache\n"
+                 "  hierarchy at the data cache hiearchy using the \"spm1\" and \"spm2\" cache\n"
                  "  configuration arguments.  Most sensible combinations are supported, e.g.,\n"
                  "\n"
-                 "    A unified l2 cache (il2 is pointed at dl2):\n"
-                 "      -cache:il1 il1:128:64:1:l -cache:il2 dl2\n"
-                 "      -cache:dl1 dl1:256:32:1:l -cache:dl2 ul2:1024:64:2:l\n"
+                 "    A unified l2 cache (il2 is pointed at spm2):\n"
+                 "      -cache:il1 il1:128:64:1:l -cache:il2 spm2\n"
+                 "      -cache:spm1 spm1:256:32:1:l -cache:spm2 ul2:1024:64:2:l\n"
                  "\n"
-                 "    Or, a fully unified cache hierarchy (il1 pointed at dl1):\n"
-                 "      -cache:il1 dl1\n"
-                 "      -cache:dl1 ul1:256:32:1:l -cache:dl2 ul2:1024:64:2:l\n"
+                 "    Or, a fully unified cache hierarchy (il1 pointed at spm1):\n"
+                 "      -cache:il1 spm1\n"
+                 "      -cache:spm1 ul1:256:32:1:l -cache:spm2 ul2:1024:64:2:l\n"
                  );
 
     opt_reg_int(odb, "-cache:il1lat",
@@ -795,8 +795,8 @@ sim_reg_options(struct opt_odb_t *odb)
                 /* print */ TRUE, /* format */ NULL);
 
     opt_reg_string(odb, "-cache:il2",
-                   "l2 instruction cache config, i.e., {<config>|dl2|none}",
-                   &cache_il2_opt, "dl2",
+                   "l2 instruction cache config, i.e., {<config>|spm2|none}",
+                   &cache_il2_opt, "spm2",
                    /* print */ TRUE, NULL);
 
     opt_reg_int(odb, "-cache:il2lat",
@@ -1000,36 +1000,36 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
         fatal("LSQ size must be a positive number > 1 and a power of two");
 
     /* use a level 1 D-cache? */
-    if (!mystricmp(cache_dl1_opt, "none"))
+    if (!mystricmp(cache_spm1_opt, "none"))
     {
-        cache_dl1 = NULL;
+        cache_spm1 = NULL;
 
         /* the level 2 D-cache cannot be defined */
-        if (strcmp(cache_dl2_opt, "none"))
+        if (strcmp(cache_spm2_opt, "none"))
             fatal("the l1 data cache must defined if the l2 cache is defined");
-        cache_dl2 = NULL;
+        cache_spm2 = NULL;
     }
-    else /* dl1 is defined */
+    else /* spm1 is defined */
     {
-        if (sscanf(cache_dl1_opt, "%[^:]:%d:%d:%d:%c",
+        if (sscanf(cache_spm1_opt, "%[^:]:%d:%d:%d:%c",
                    name, &nsets, &bsize, &assoc, &c) != 5)
             fatal("bad l1 D-cache parms: <name>:<nsets>:<bsize>:<assoc>:<repl>");
-        cache_dl1 = cache_create(name, nsets, bsize, /* balloc */ FALSE,
+        cache_spm1 = cache_create(name, nsets, bsize, /* balloc */ FALSE,
                                  /* usize */ 0, assoc, cache_char2policy(c),
-                                 dl1_access_fn, /* hit lat */ cache_dl1_lat);
+                                 spm1_access_fn, /* hit lat */ cache_spm1_lat);
 
         /* is the level 2 D-cache defined? */
-        if (!mystricmp(cache_dl2_opt, "none"))
-            cache_dl2 = NULL;
+        if (!mystricmp(cache_spm2_opt, "none"))
+            cache_spm2 = NULL;
         else
         {
-            if (sscanf(cache_dl2_opt, "%[^:]:%d:%d:%d:%c",
+            if (sscanf(cache_spm2_opt, "%[^:]:%d:%d:%d:%c",
                        name, &nsets, &bsize, &assoc, &c) != 5)
                 fatal("bad l2 D-cache parms: "
                       "<name>:<nsets>:<bsize>:<assoc>:<repl>");
-            cache_dl2 = cache_create(name, nsets, bsize, /* balloc */ FALSE,
+            cache_spm2 = cache_create(name, nsets, bsize, /* balloc */ FALSE,
                                      /* usize */ 0, assoc, cache_char2policy(c),
-                                     dl2_access_fn, /* hit lat */ cache_dl2_lat);
+                                     spm2_access_fn, /* hit lat */ cache_spm2_lat);
         }
     }
 
@@ -1043,22 +1043,22 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
             fatal("the l1 inst cache must defined if the l2 cache is defined");
         cache_il2 = NULL;
     }
-    else if (!mystricmp(cache_il1_opt, "dl1"))
+    else if (!mystricmp(cache_il1_opt, "spm1"))
     {
-        if (!cache_dl1)
+        if (!cache_spm1)
             fatal("I-cache l1 cannot access D-cache l1 as it's undefined");
-        cache_il1 = cache_dl1;
+        cache_il1 = cache_spm1;
 
         /* the level 2 I-cache cannot be defined */
         if (strcmp(cache_il2_opt, "none"))
             fatal("the l1 inst cache must defined if the l2 cache is defined");
         cache_il2 = NULL;
     }
-    else if (!mystricmp(cache_il1_opt, "dl2"))
+    else if (!mystricmp(cache_il1_opt, "spm2"))
     {
-        if (!cache_dl2)
+        if (!cache_spm2)
             fatal("I-cache l1 cannot access D-cache l2 as it's undefined");
-        cache_il1 = cache_dl2;
+        cache_il1 = cache_spm2;
 
         /* the level 2 I-cache cannot be defined */
         if (strcmp(cache_il2_opt, "none"))
@@ -1077,11 +1077,11 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
         /* is the level 2 D-cache defined? */
         if (!mystricmp(cache_il2_opt, "none"))
             cache_il2 = NULL;
-        else if (!mystricmp(cache_il2_opt, "dl2"))
+        else if (!mystricmp(cache_il2_opt, "spm2"))
         {
-            if (!cache_dl2)
+            if (!cache_spm2)
                 fatal("I-cache l2 cannot access D-cache l2 as it's undefined");
-            cache_il2 = cache_dl2;
+            cache_il2 = cache_spm2;
         }
         else
         {
@@ -1123,10 +1123,10 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
                             /* hit latency */ 1);
     }
 
-    if (cache_dl1_lat < 1)
+    if (cache_spm1_lat < 1)
         fatal("l1 data cache latency must be greater than zero");
 
-    if (cache_dl2_lat < 1)
+    if (cache_spm2_lat < 1)
         fatal("l2 data cache latency must be greater than zero");
 
     if (cache_il1_lat < 1)
@@ -1299,15 +1299,15 @@ sim_reg_stats(struct stat_sdb_t *sdb)   /* stats database */
 
     /* register cache stats */
     if (cache_il1
-        && (cache_il1 != cache_dl1 && cache_il1 != cache_dl2))
+        && (cache_il1 != cache_spm1 && cache_il1 != cache_spm2))
         cache_reg_stats(cache_il1, sdb);
     if (cache_il2
-        && (cache_il2 != cache_dl1 && cache_il2 != cache_dl2))
+        && (cache_il2 != cache_spm1 && cache_il2 != cache_spm2))
         cache_reg_stats(cache_il2, sdb);
-    if (cache_dl1)
-        cache_reg_stats(cache_dl1, sdb);
-    if (cache_dl2)
-        cache_reg_stats(cache_dl2, sdb);
+    if (cache_spm1)
+        cache_reg_stats(cache_spm1, sdb);
+    if (cache_spm2)
+        cache_reg_stats(cache_spm2, sdb);
     if (itlb)
         cache_reg_stats(itlb, sdb);
     if (dtlb)
@@ -2182,13 +2182,13 @@ ruu_commit(void)
                     fu->master->busy = fu->issuelat;
 
                     /* go to the data cache */
-                    if (cache_dl1)
+                    if (cache_spm1)
                     {
                         /* commit store value to D-cache */
                         lat =
-                            cache_access(cache_dl1, Write, (LSQ[LSQ_head].addr&~3),
+                            cache_access(cache_spm1, Write, (LSQ[LSQ_head].addr&~3),
                                          NULL, 4, sim_cycle, NULL, NULL);
-                        if (lat > cache_dl1_lat)
+                        if (lat > cache_spm1_lat)
                             events |= PEV_CACHEMISS;
                     }
 
@@ -2727,14 +2727,14 @@ ruu_issue(void)
                                     sim_invalid_addrs++;
 
                                 /* no! go to the data cache if addr is valid */
-                                if (cache_dl1 && valid_addr)
+                                if (cache_spm1 && valid_addr)
                                 {
                                     /* access the cache if non-faulting */
                                     load_lat =
-                                        cache_access(cache_dl1, Read,
+                                        cache_access(cache_spm1, Read,
                                                      (rs->addr & ~3), NULL, 4,
                                                      sim_cycle, NULL, NULL);
-                                    if (load_lat > cache_dl1_lat)
+                                    if (load_lat > cache_spm1_lat)
                                         events |= PEV_CACHEMISS;
                                 }
                                 else
