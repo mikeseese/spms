@@ -9,4 +9,4 @@ sim-spms
 sim-profile
 sim-safe
 sysprobe
-
+spms/libspms.a

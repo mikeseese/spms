@@ -73,6 +73,8 @@
 #include "dlite.h"
 #include "sim.h"
 
+#include "SPMS_Defines.h"
+
 /*
  * This file implements a very detailed out-of-order issue superscalar
  * processor with a two-level memory system and speculative execution support.
