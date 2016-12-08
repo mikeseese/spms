@@ -1,7 +1,7 @@
-#define SPMS_HEAD1_ADDR     0xffffffff
-#define SPMS_TAIL1_ADDR     0xfffffffe
-#define SPMS_HEAD2_ADDR     0xfffffffd
-#define SPMS_TAIL2_ADDR     0xfffffffc
-#define SPMS_COPY_DST_ADDR  0xfffffffb
-#define SPMS_COPY_SRC_ADDR  0xfffffffa
-#define SPMS_COPY_SIZE_ADDR 0xfffffff9
+#define SPMS_HEAD1_ADDR     0x12345678
+#define SPMS_TAIL1_ADDR     0x12345679
+#define SPMS_HEAD2_ADDR     0x1234567a
+#define SPMS_TAIL2_ADDR     0x1234567b
+#define SPMS_COPY_DST_ADDR  0x1234567d
+#define SPMS_COPY_SRC_ADDR  0x1234567e
+#define SPMS_COPY_SIZE_ADDR 0x1234567f
