@@ -1,9 +1,5 @@
 
-#include "SPMS_Defines.h"
-
-#define NULL 0
-#define false 0
-#define true 1
+#include "SPMS.h"
 
 void* SPM1_Head = NULL;
 void* SPM1_Tail = NULL;
@@ -15,13 +11,6 @@ unsigned long SPM2_Size = 0;
 
 int SPMS_wrote_addresses = false;
 
-int SPMS_Initialize(unsigned long spm1_size, unsigned long spm2_size);
-int SPMS_Initialize_Memory(unsigned long spm1_size, unsigned long spm2_size);
-
-void SPMS_Free_Memory();
-
-int SPMS_Write_Memory_Addresses_To_Sim();
-
 int SPMS_Initialize(unsigned long spm1_size, unsigned long spm2_size) {
     SPMS_Initialize_Memory(spm1_size, spm2_size);
 
@@ -31,9 +20,9 @@ int SPMS_Initialize(unsigned long spm1_size, unsigned long spm2_size) {
 int SPMS_Initialize_Memory(unsigned long spm1_size, unsigned long spm2_size) {
     SPMS_Free_Memory();
 
-    SPM1_Head = malloc(spm1_size);
+    //SPM1_Head = malloc(spm1_size);
     SPM1_Tail = SPM1_Head + spm1_size - 1;
-    SPM2_Head = malloc(spm2_size);
+    //SPM2_Head = malloc(spm2_size);
     SPM2_Tail = SPM2_Head + spm2_size - 1;
 
     SPMS_wrote_addresses = false;
@@ -43,10 +32,10 @@ int SPMS_Initialize_Memory(unsigned long spm1_size, unsigned long spm2_size) {
 
 void SPMS_Free_Memory() {
     if(SPM1_Head != NULL) {
-        free(SPM1_Head);
+        //free(SPM1_Head);
     }
     if(SPM2_Head != NULL) {
-        free(SPM2_Head);
+        //free(SPM2_Head);
     }
     SPM1_Head = NULL;
     SPM1_Tail = NULL;
@@ -62,10 +51,10 @@ int SPMS_Write_Memory_Addresses_To_Sim() {
         return false;
     }
 
-    memcpy((void*) SPMS_HEAD1_ADDR, &(SPM1_Head), sizeof(void*));
-    memcpy((void*) SPMS_TAIL1_ADDR, &(SPM1_Tail), sizeof(void*));
-    memcpy((void*) SPMS_HEAD2_ADDR, &(SPM2_Head), sizeof(void*));
-    memcpy((void*) SPMS_TAIL2_ADDR, &(SPM2_Tail), sizeof(void*));
+    //memcpy((void*) SPMS_HEAD1_ADDR, &(SPM1_Head), sizeof(void*));
+    //memcpy((void*) SPMS_TAIL1_ADDR, &(SPM1_Tail), sizeof(void*));
+    //memcpy((void*) SPMS_HEAD2_ADDR, &(SPM2_Head), sizeof(void*));
+    //memcpy((void*) SPMS_TAIL2_ADDR, &(SPM2_Tail), sizeof(void*));
 
     SPMS_wrote_addresses = true;
 }
