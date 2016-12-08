@@ -11,13 +11,13 @@ unsigned long SPM2_Size = 0;
 
 int SPMS_wrote_addresses = false;
 
-int SPMS_Initialize(unsigned long spm1_size, unsigned long spm2_size) {
+int SPMS_Initialize(size_t spm1_size, size_t spm2_size) {
     SPMS_Initialize_Memory(spm1_size, spm2_size);
 
     return true;
 }
 
-int SPMS_Initialize_Memory(unsigned long spm1_size, unsigned long spm2_size) {
+int SPMS_Initialize_Memory(size_t spm1_size, size_t spm2_size) {
     SPMS_Free_Memory();
 
     SPM1_Head = malloc(spm1_size);
@@ -51,10 +51,16 @@ int SPMS_Write_Memory_Addresses_To_Sim() {
         return false;
     }
 
-    *(volatile unsigned int*)SPMS_HEAD1_ADDR = SPM1_Head;
-    *(volatile unsigned int*)SPMS_TAIL1_ADDR = SPM1_Tail;
-    *(volatile unsigned int*)SPMS_HEAD2_ADDR = SPM2_Head;
-    *(volatile unsigned int*)SPMS_TAIL2_ADDR = SPM2_Tail;
+    *(volatile unsigned int*)SPMS_HEAD1_ADDR = (unsigned int) SPM1_Head;
+    *(volatile unsigned int*)SPMS_TAIL1_ADDR = (unsigned int) SPM1_Tail;
+    *(volatile unsigned int*)SPMS_HEAD2_ADDR = (unsigned int) SPM2_Head;
+    *(volatile unsigned int*)SPMS_TAIL2_ADDR = (unsigned int) SPM2_Tail;
 
     SPMS_wrote_addresses = true;
+}
+
+int SPMS_Copy_Data(void* src, void* dst, size_t size) {
+    *(volatile unsigned int*)SPMS_COPY_DST_ADDR = (unsigned int) src;
+    *(volatile unsigned int*)SPMS_COPY_SRC_ADDR = (unsigned int) dst;
+    *(volatile unsigned int*)SPMS_COPY_SIZE_ADDR = (unsigned int) size;
 }

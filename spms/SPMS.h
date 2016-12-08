@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef NULL
 #define NULL 0
+#endif
 #define false 0
 #define true 1
 
@@ -18,9 +20,10 @@ unsigned long SPM2_Size;
 
 int SPMS_wrote_addresses;
 
-int SPMS_Initialize(unsigned long spm1_size, unsigned long spm2_size);
-int SPMS_Initialize_Memory(unsigned long spm1_size, unsigned long spm2_size);
+int SPMS_Initialize(size_t spm1_size, size_t spm2_size);
+int SPMS_Initialize_Memory(size_t spm1_size, size_t spm2_size);
 
 void SPMS_Free_Memory();
 
 int SPMS_Write_Memory_Addresses_To_Sim();
+int SPMS_Copy_Data(void* src, void* dst, size_t size);
