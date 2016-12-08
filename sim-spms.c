@@ -246,6 +246,9 @@ static md_addr_t SPM1_Head = NULL;
 static md_addr_t SPM1_Tail = NULL;
 static md_addr_t SPM2_Head = NULL;
 static md_addr_t SPM2_Tail = NULL;
+static md_addr_t SPM_Copy_Src = NULL;
+static md_addr_t SPM_Copy_Dst = NULL;
+static word_t SPM_Copy_Size = NULL;
 
 /*
  * functional unit resource configuration
@@ -3891,6 +3894,21 @@ case OP:              \
                     case SPMS_TAIL2_ADDR:
                         SPM2_Tail = regs.regs_R[in1];
                         read_spms_addrs++;
+                        break;
+                }
+            }
+            else if(is_write)
+            {
+                switch(addr)
+                {
+                    case SPMS_COPY_DST_ADDR:
+                        SPM1_Head = regs.regs_R[in1];
+                        break;
+                    case SPMS_COPY_SRC_ADDR:
+                        SPM1_Tail = regs.regs_R[in1];
+                        break;
+                    case SPMS_COPY_SIZE_ADDR:
+                        SPM2_Head = regs.regs_R[in1];
                         break;
                 }
             }
