@@ -73,7 +73,7 @@
 #include "dlite.h"
 #include "sim.h"
 
-#include "SPMS_Defines.h"
+#include "spms/SPMS_Defines.h"
 
 /*
  * This file implements a very detailed out-of-order issue superscalar
@@ -239,6 +239,13 @@ static char *pcstat_vars[MAX_PCSTAT_VARS];
 
 /* operate in backward-compatible bugs mode (for testing only) */
 static int bugcompat_mode;
+
+/* spms variables */
+static int read_spms_addrs = 0;
+static void* SPM1_Head = NULL;
+static void* SPM1_Tail = NULL;
+static void* SPM2_Head = NULL;
+static void* SPM2_Tail = NULL;
 
 /*
  * functional unit resource configuration
@@ -3863,6 +3870,26 @@ case OP:              \
                 sim_total_loads++;
                 if (!spec_mode)
                     sim_num_loads++;
+            }
+
+            if(is_write && read_spms_addrs < 4)
+            {
+                switch(addr)
+                {
+                    case SPMS_HEAD1_ADDR:
+                        SPM1_Head = NULL;
+                        break;
+                    case SPMS_TAIL1_ADDR:
+                        SPM1_Tail = NULL;
+                        break;
+                    case SPMS_HEAD2_ADDR:
+                        SPM2_Head = NULL;
+                        break;
+                    case SPMS_TAIL2_ADDR:
+                        SPM2_Tail = NULL;
+                        break;
+                }
+                read_spms_addrs++;
             }
         }
 
