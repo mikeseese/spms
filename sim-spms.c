@@ -242,10 +242,10 @@ static int bugcompat_mode;
 
 /* spms variables */
 static int read_spms_addrs = 0;
-static void* SPM1_Head = NULL;
-static void* SPM1_Tail = NULL;
-static void* SPM2_Head = NULL;
-static void* SPM2_Tail = NULL;
+static md_addr_t SPM1_Head = NULL;
+static md_addr_t SPM1_Tail = NULL;
+static md_addr_t SPM2_Head = NULL;
+static md_addr_t SPM2_Tail = NULL;
 
 /*
  * functional unit resource configuration
@@ -3877,19 +3877,22 @@ case OP:              \
                 switch(addr)
                 {
                     case SPMS_HEAD1_ADDR:
-                        SPM1_Head = NULL;
+                        SPM1_Head = regs.regs_R[in1];
+                        read_spms_addrs++;
                         break;
                     case SPMS_TAIL1_ADDR:
-                        SPM1_Tail = NULL;
+                        SPM1_Tail = regs.regs_R[in1];
+                        read_spms_addrs++;
                         break;
                     case SPMS_HEAD2_ADDR:
-                        SPM2_Head = NULL;
+                        SPM2_Head = regs.regs_R[in1];
+                        read_spms_addrs++;
                         break;
                     case SPMS_TAIL2_ADDR:
-                        SPM2_Tail = NULL;
+                        SPM2_Tail = regs.regs_R[in1];
+                        read_spms_addrs++;
                         break;
                 }
-                read_spms_addrs++;
             }
         }
 
