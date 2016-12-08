@@ -3712,6 +3712,8 @@ static struct RS_link last_op = RSLINK_NULL_DATA;
 static void
 ruu_dispatch(void)
 {
+    int do_break;
+    void* memblock = NULL;
     int i;
     int n_dispatched;   /* total insts dispatched */
     md_inst_t inst;   /* actual instruction bits */
@@ -3881,36 +3883,57 @@ case OP:              \
                 {
                     case SPMS_HEAD1_ADDR:
                         SPM1_Head = regs.regs_R[in1];
+                        op = MD_NOP_OP; // Don't do any real processing
                         read_spms_addrs++;
                         break;
                     case SPMS_TAIL1_ADDR:
                         SPM1_Tail = regs.regs_R[in1];
+                        op = MD_NOP_OP; // Don't do any real processing
                         read_spms_addrs++;
                         break;
                     case SPMS_HEAD2_ADDR:
                         SPM2_Head = regs.regs_R[in1];
+                        op = MD_NOP_OP; // Don't do any real processing
                         read_spms_addrs++;
                         break;
                     case SPMS_TAIL2_ADDR:
                         SPM2_Tail = regs.regs_R[in1];
+                        op = MD_NOP_OP; // Don't do any real processing
                         read_spms_addrs++;
                         break;
                 }
             }
             else if(is_write)
             {
+                do_break = FALSE;
                 switch(addr)
                 {
                     case SPMS_COPY_DST_ADDR:
-                        SPM1_Head = regs.regs_R[in1];
+                        SPM_Copy_Dst = regs.regs_R[in1];
+                        op = MD_NOP_OP; // Don't do any real processing until all are received
                         break;
                     case SPMS_COPY_SRC_ADDR:
-                        SPM1_Tail = regs.regs_R[in1];
+                        SPM_Copy_Src = regs.regs_R[in1];
+                        op = MD_NOP_OP; // Don't do any real processing until all are received
                         break;
                     case SPMS_COPY_SIZE_ADDR:
-                        SPM2_Head = regs.regs_R[in1];
+                        SPM_Copy_Size = regs.regs_R[in1];
+                        // If we're here, we have all the parameters, lets go
+                        // do copy
+                        memblock = malloc(SPM_Copy_Size);
+                        mem_bcopy(mem_access, mem, Read, SPM_Copy_Src, memblock, SPM_Copy_Size);
+                        mem_bcopy(mem_access, mem, Write, SPM_Copy_Dst, memblock, SPM_Copy_Size);
+                        free(memblock);
+                        memblock = NULL;
+
+                        // add latency
+                        ruu_fetch_issue_delay = 10;
+
+                        do_break = TRUE;
                         break;
                 }
+                if(do_break)
+                    break;
             }
         }
 
