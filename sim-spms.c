@@ -2226,7 +2226,6 @@ ruu_commit(void)
                     /* schedule functional unit release event */
                     fu->master->busy = fu->issuelat;
 
-                    // if addr >= SPM1_Head && addr <= SPM1_Tail
                     if(LSQ[LSQ_head].addr >= SPM1_Head && LSQ[LSQ_head].addr <= SPM1_Tail)
                     {
                         // SPM1 access
@@ -2239,8 +2238,6 @@ ruu_commit(void)
                     {
                         // RAM access
                     }
-                    // else if addr >= SPM2_Head && addr <= SPM2_Tail
-                    // else
 
                     /* go to the data cache */
                     if (cache_spm1)
@@ -2790,10 +2787,27 @@ ruu_issue(void)
                                 if (!spec_mode && !valid_addr)
                                     sim_invalid_addrs++;
 
+                                if(valid_addr)
+                                {
+                                    if(rs->addr >= SPM1_Head && rs->addr <= SPM1_Tail)
+                                    {
+                                        // SPM1 access
+                                        load_lat =  spm_access_latency(spm1_lat[0], spm1_lat[1], mem_bus_width);
+                                    }
+                                    else if(rs->addr >= SPM2_Head && rs->addr <= SPM2_Tail)
+                                    {
+                                        // SPM2 access
+                                        load_lat =  spm_access_latency(spm2_lat[0], spm2_lat[1], mem_bus_width);
+                                    }
+                                    else
+                                    {
+                                        // RAM access
+                                        load_lat =  mem_access_latency(mem_bus_width);
+                                    }
+                                }
                                 /* no! go to the data cache if addr is valid */
                                 if (cache_spm1 && valid_addr)
                                 {
-                                    load_lat =  spm_access_latency(spm1_lat[0], spm1_lat[1], 4);
                                     /* access the cache if non-faulting */
                                     /*load_lat =
                                         cache_access(cache_spm1, Read,
@@ -2805,7 +2819,7 @@ ruu_issue(void)
                                 else
                                 {
                                     /* no caches defined, just use op latency */
-                                    load_lat = fu->oplat;
+                                    //load_lat = fu->oplat;
                                 }
                             }
 
