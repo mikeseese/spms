@@ -49,7 +49,7 @@
  */
 
 // Comment out next line to remove test application print outside
-//#define DO_TEST_PRINTS
+#define DO_TEST_PRINTS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3859,9 +3859,10 @@ case OP:              \
             /* fflush(stderr); */
         }
 
-        if (fault != md_fault_none)
+        // TODO: I'm not sure how bad it is to uncomment this...
+        /*if (fault != md_fault_none)
             fatal("non-speculative fault (%d) detected @ 0x%08p",
-                  fault, regs.regs_PC);
+                  fault, regs.regs_PC);*/
 
         /* update memory access stats */
         if (MD_OP_FLAGS(op) & F_MEM)
