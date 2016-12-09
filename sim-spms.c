@@ -3780,6 +3780,7 @@ static void
 ruu_dispatch(void)
 {
     int do_break;
+    int numblocks;
     void* memblock = NULL;
     int i;
     int n_dispatched;   /* total insts dispatched */
@@ -4007,8 +4008,24 @@ case OP:              \
                         free(memblock);
                         memblock = NULL;
 
-                        // add latency
-                        ruu_fetch_issue_delay = 10;
+                        numblocks = SPM_Copy_Size / mem_bus_width + 1; // TODO: extra block due to laziness
+
+
+                        if(SPM_Copy_Src >= SPM1_Head && SPM_Copy_Src <= SPM1_Tail)
+                        {
+                            // SPM1 access
+                            ruu_fetch_issue_delay =  spm_access_latency(spm1_lat[0], spm1_lat[1], numblocks * mem_bus_width);
+                        }
+                        else if(SPM_Copy_Src >= SPM2_Head && SPM_Copy_Src <= SPM2_Tail)
+                        {
+                            // SPM2 access
+                            ruu_fetch_issue_delay =  spm_access_latency(spm2_lat[0], spm2_lat[1], numblocks * mem_bus_width);
+                        }
+                        else
+                        {
+                            // RAM access
+                            ruu_fetch_issue_delay =  mem_access_latency(numblocks * mem_bus_width);
+                        }
 
                         //do_break = TRUE;
                         op = MD_NOP_OP; // Don't do any real processing until all are received
