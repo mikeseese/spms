@@ -3859,7 +3859,7 @@ case OP:              \
             /* fflush(stderr); */
         }
 
-        // TODO: I'm not sure how bad it is to uncomment this...
+        // TODO: I'm not sure how bad it is to comment this...
         /*if (fault != md_fault_none)
             fatal("non-speculative fault (%d) detected @ 0x%08p",
                   fault, regs.regs_PC);*/
