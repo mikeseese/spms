@@ -3924,12 +3924,12 @@ case OP:              \
                 do_break = FALSE;
                 switch(addr)
                 {
-                    case SPMS_COPY_DST_ADDR:
-                        SPM_Copy_Dst = regs.regs_R[in1];
-                        op = MD_NOP_OP; // Don't do any real processing until all are received
-                        break;
                     case SPMS_COPY_SRC_ADDR:
                         SPM_Copy_Src = regs.regs_R[in1];
+                        op = MD_NOP_OP; // Don't do any real processing until all are received
+                        break;
+                    case SPMS_COPY_DST_ADDR:
+                        SPM_Copy_Dst = regs.regs_R[in1];
                         op = MD_NOP_OP; // Don't do any real processing until all are received
                         break;
                     case SPMS_COPY_SIZE_ADDR:
@@ -3945,7 +3945,8 @@ case OP:              \
                         // add latency
                         ruu_fetch_issue_delay = 10;
 
-                        do_break = TRUE;
+                        //do_break = TRUE;
+                        op = MD_NOP_OP; // Don't do any real processing until all are received
                         break;
                 }
                 if(do_break)
