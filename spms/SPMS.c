@@ -60,7 +60,7 @@ int SPMS_Write_Memory_Addresses_To_Sim() {
 }
 
 int SPMS_Copy_Data(void* src, void* dst, size_t size) {
-    *(volatile unsigned int*)SPMS_COPY_DST_ADDR = (unsigned int) src;
-    *(volatile unsigned int*)SPMS_COPY_SRC_ADDR = (unsigned int) dst;
+    *(volatile unsigned int*)SPMS_COPY_SRC_ADDR = (unsigned int) src;
+    *(volatile unsigned int*)SPMS_COPY_DST_ADDR = (unsigned int) dst;
     *(volatile unsigned int*)SPMS_COPY_SIZE_ADDR = (unsigned int) size;
 }
