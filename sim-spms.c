@@ -194,16 +194,16 @@ static int compress_icache_addrs;
 /* memory access latency (<first_chunk> <inter_chunk>) */
 static int mem_nelt = 2;
 static int mem_lat[2] =
-{ /* lat to first chunk */ 18, /* lat between remaining chunks */ 2 };
+{ /* lat to first chunk */ 100, /* lat between remaining chunks */ 10 };
 
 /* memory access bus width (in bytes) */
 static int mem_bus_width;
 
 static int spm1_lat[2] =
-{ /* lat to first chunk */ 18, /* lat between remaining chunks */ 2 };
+{ /* lat to first chunk */ 1, /* lat between remaining chunks */ 1 };
 
 static int spm2_lat[2] =
-{ /* lat to first chunk */ 18, /* lat between remaining chunks */ 2 };
+{ /* lat to first chunk */ 10, /* lat between remaining chunks */ 1 };
 
 
 /* instruction TLB config, i.e., {<config>|none} */
@@ -444,7 +444,7 @@ mem_access_latency(int blk_sz)    /* block size accessed */
 static unsigned int     /* total latency of access */
 spm_access_latency(int a, int b, int blk_sz)    /* block size accessed */
 {
-    int chunks = blk_sz / mem_bus_width;
+    int chunks = (blk_sz + (mem_bus_width - 1)) / mem_bus_width;
 
     assert(chunks > 0);
 
