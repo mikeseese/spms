@@ -199,6 +199,13 @@ static int mem_lat[2] =
 /* memory access bus width (in bytes) */
 static int mem_bus_width;
 
+static int spm1_lat[2] =
+{ /* lat to first chunk */ 18, /* lat between remaining chunks */ 2 };
+
+static int spm2_lat[2] =
+{ /* lat to first chunk */ 18, /* lat between remaining chunks */ 2 };
+
+
 /* instruction TLB config, i.e., {<config>|none} */
 static char *itlb_opt;
 
@@ -431,6 +438,18 @@ mem_access_latency(int blk_sz)    /* block size accessed */
 
     return (/* first chunk latency */ mem_lat[0] +
                                       (/* remainder chunk latency */ mem_lat[1] * (chunks - 1)));
+}
+
+/* spm access latency, assumed to not cross a page boundary */
+static unsigned int     /* total latency of access */
+spm_access_latency(int a, int b, int blk_sz)    /* block size accessed */
+{
+    int chunks = blk_sz / mem_bus_width;
+
+    assert(chunks > 0);
+
+    return (/* first chunk latency */ a +
+                                      (/* remainder chunk latency */ b * (chunks - 1)));
 }
 
 
@@ -835,6 +854,18 @@ sim_reg_options(struct opt_odb_t *odb)
     opt_reg_int(odb, "-mem:width", "memory access bus width (in bytes)",
                 &mem_bus_width, /* default */ 8,
                 /* print */ TRUE, /* format */ NULL);
+
+   /* mem options */
+   opt_reg_int_list(odb, "-spm1:lat",
+                    "spm1 access latency (<first_chunk> <inter_chunk>)",
+                    spm1_lat, mem_nelt, &mem_nelt, spm1_lat,
+                    /* print */ TRUE, /* format */ NULL, /* !accrue */ FALSE);
+
+   /* mem options */
+   opt_reg_int_list(odb, "-spm2:lat",
+                    "spm2 access latency (<first_chunk> <inter_chunk>)",
+                    spm2_lat, mem_nelt, &mem_nelt, spm2_lat,
+                    /* print */ TRUE, /* format */ NULL, /* !accrue */ FALSE);
 
     /* TLB options */
 
@@ -2195,15 +2226,34 @@ ruu_commit(void)
                     /* schedule functional unit release event */
                     fu->master->busy = fu->issuelat;
 
+                    // if addr >= SPM1_Head && addr <= SPM1_Tail
+                    if(LSQ[LSQ_head].addr >= SPM1_Head && LSQ[LSQ_head].addr <= SPM1_Tail)
+                    {
+                        // SPM1 access
+                    }
+                    else if(LSQ[LSQ_head].addr >= SPM2_Head && LSQ[LSQ_head].addr <= SPM2_Tail)
+                    {
+                        // SPM2 access
+                    }
+                    else
+                    {
+                        // RAM access
+                    }
+                    // else if addr >= SPM2_Head && addr <= SPM2_Tail
+                    // else
+
                     /* go to the data cache */
                     if (cache_spm1)
                     {
                         /* commit store value to D-cache */
-                        lat =
+                        /*lat =
                             cache_access(cache_spm1, Write, (LSQ[LSQ_head].addr&~3),
                                          NULL, 4, sim_cycle, NULL, NULL);
+
+
+
                         if (lat > cache_spm1_lat)
-                            events |= PEV_CACHEMISS;
+                            events |= PEV_CACHEMISS;*/
                     }
 
                     /* all loads and stores must to access D-TLB */
@@ -2743,13 +2793,14 @@ ruu_issue(void)
                                 /* no! go to the data cache if addr is valid */
                                 if (cache_spm1 && valid_addr)
                                 {
+                                    load_lat =  spm_access_latency(spm1_lat[0], spm1_lat[1], 4);
                                     /* access the cache if non-faulting */
-                                    load_lat =
+                                    /*load_lat =
                                         cache_access(cache_spm1, Read,
                                                      (rs->addr & ~3), NULL, 4,
                                                      sim_cycle, NULL, NULL);
                                     if (load_lat > cache_spm1_lat)
-                                        events |= PEV_CACHEMISS;
+                                        events |= PEV_CACHEMISS;*/
                                 }
                                 else
                                 {
