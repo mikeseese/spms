@@ -48,6 +48,8 @@
  * Copyright (C) 1994-2003 by Todd M. Austin, Ph.D. and SimpleScalar, LLC.
  */
 
+// Comment out next line to remove test application print outside
+//#define DO_TEST_PRINTS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3883,21 +3885,34 @@ case OP:              \
                 {
                     case SPMS_HEAD1_ADDR:
                         SPM1_Head = regs.regs_R[in1];
+#ifdef DO_TEST_PRINTS
+                        printf("Test Transfer Sim - Received Head 1 addr: %x\n", SPM1_Head);
+                        printf("Test Transfer Sim - Value at 0 offset of SPM1 head: %d\n", MEM_READ_BYTE(mem, SPM1_Head));
+#endif
                         op = MD_NOP_OP; // Don't do any real processing
                         read_spms_addrs++;
                         break;
                     case SPMS_TAIL1_ADDR:
                         SPM1_Tail = regs.regs_R[in1];
+#ifdef DO_TEST_PRINTS
+                        printf("Test Transfer Sim - Received Tail 1 addr: %x\n", SPM1_Tail);
+#endif
                         op = MD_NOP_OP; // Don't do any real processing
                         read_spms_addrs++;
                         break;
                     case SPMS_HEAD2_ADDR:
                         SPM2_Head = regs.regs_R[in1];
+#ifdef DO_TEST_PRINTS
+                        printf("Test Transfer Sim - Received Head 2 addr: %x\n", SPM2_Head);
+#endif
                         op = MD_NOP_OP; // Don't do any real processing
                         read_spms_addrs++;
                         break;
                     case SPMS_TAIL2_ADDR:
                         SPM2_Tail = regs.regs_R[in1];
+#ifdef DO_TEST_PRINTS
+                        printf("Test Transfer Sim - Received Tail 2 addr: %x\n", SPM2_Tail);
+#endif
                         op = MD_NOP_OP; // Don't do any real processing
                         read_spms_addrs++;
                         break;
